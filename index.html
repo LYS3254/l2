@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>丝绸之路历史时间大闯关</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f4e8; /* 沙色背景 */
+            color: #333;
+        }
+        h1 {
+            color: #8B4513;
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: rgba(255,255,255,0.7);
+        }
+        .quiz-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #d4b483; /* 沙漠色边框 */
+        }
+        .question {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        input[type="text"] {
+            padding: 5px;
+            margin: 0 5px;
+            width: 80px;
+            text-align: center;
+            border: 1px solid #8B4513;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            font-size: 16px;
+            margin: 20px auto;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #A0522D;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .stats {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e7f3fe;
+            border-radius: 5px;
+        }
+        .wrong-answers {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            display: none;
+        }
+        .feedback {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .info-box {
+            background-color: #f0e6cc; /* 浅沙色 */
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #8B4513;
+        }
+    </style>
+</head>
+<body>
+    <h1>丝绸之路历史时间大闯关</h1>
+    
+    <div class="quiz-container">
+        <div class="info-box">
+            <p>丝绸之路是古代连接东西方的重要贸易通道，对中外文化交流产生了深远影响。本测试将考察你对丝绸之路相关历史事件时间的掌握情况。</p>
+        </div>
+        
+        <div id="questions"></div>
+        <button id="submit-btn">提交答案</button>
+        <button id="new-quiz-btn" style="display: none;">开始新测试</button>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="stats">
+            <h3>学习统计</h3>
+            <p>总答题数: <span id="total-answered">0</span></p>
+            <p>正确数: <span id="correct-count">0</span></p>
+            <p>错误数: <span id="wrong-count">0</span></p>
+            <p>正确率: <span id="accuracy-rate">0</span>%</p>
+        </div>
+        
+        <div id="wrong-answers" class="wrong-answers">
+            <h3>错题集</h3>
+            <div id="wrong-answers-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // 丝绸之路历史事件数据库
+        const silkRoadEvents = [
+            { event: "张骞第一次出使西域", year: "前138年" },
+            { event: "张骞第二次出使西域", year: "前119年" },
+            { event: "西汉设立西域都护府", year: "前60年" },
+            { event: "班超出使西域", year: "73年" },
+            { event: "甘英出使大秦（罗马帝国）", year: "97年" },
+            { event: "东汉恢复西域都护府", year: "123年" },
+            { event: "法显西行求法", year: "399年" },
+            { event: "北魏统一北方，丝绸之路北道开通", year: "439年" },
+            { event: "玄奘西行取经", year: "629年" },
+            { event: "唐朝设立安西都护府", year: "640年" },
+            { event: "唐朝设立北庭都护府", year: "702年" },
+            { event: "鉴真东渡日本传播佛教", year: "753年" },
+            { event: "怛罗斯之战（唐军与阿拉伯帝国）", year: "751年" },
+            { event: "马可·波罗到达元朝", year: "1275年" },
+            { event: "郑和下西洋（海上丝绸之路）", year: "1405年" },
+            { event: "明朝关闭嘉峪关，陆上丝绸之路衰落", year: "1524年" },
+            { event: "大航海时代开始，丝绸之路重要性下降", year: "1492年" },
+            { event: "瑞典探险家斯文·赫定发现楼兰古城", year: "1900年" },
+            { event: "联合国教科文组织将丝绸之路列入世界遗产", year: "2014年" },
+            { event: "中国提出'一带一路'倡议", year: "2013年" },
+            { event: "粟特人在撒马尔罕建立商业网络", year: "5世纪" },
+            { event: "拜占庭帝国获得养蚕技术", year: "552年" },
+            { event: "造纸术经阿拉伯传入欧洲", year: "751年" },
+            { event: "佛教经丝绸之路传入中国", year: "1世纪" },
+            { event: "景教（基督教聂斯脱利派）传入中国", year: "635年" },
+            { event: "伊斯兰教经丝绸之路传入中国", year: "651年" },
+            { event: "蒙古帝国建立，丝绸之路空前繁荣", year: "1206年" },
+            { event: "黑死病经丝绸之路传播到欧洲", year: "1347年" }
+        ];
+
+        // 学习统计
+        let stats = {
+            totalAnswered: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            wrongAnswers: []
+        };
+
+        // 从本地存储加载统计信息
+        function loadStats() {
+            const savedStats = localStorage.getItem('silkRoadQuizStats');
+            if (savedStats) {
+                stats = JSON.parse(savedStats);
+                updateStatsDisplay();
+            }
+        }
+
+        // 保存统计信息到本地存储
+        function saveStats() {
+            localStorage.setItem('silkRoadQuizStats', JSON.stringify(stats));
+        }
+
+        // 更新统计显示
+        function updateStatsDisplay() {
+            document.getElementById('total-answered').textContent = stats.totalAnswered;
+            document.getElementById('correct-count').textContent = stats.correctCount;
+            document.getElementById('wrong-count').textContent = stats.wrongCount;
+            
+            const accuracy = stats.totalAnswered > 0 ? 
+                Math.round((stats.correctCount / stats.totalAnswered) * 100) : 0;
+            document.getElementById('accuracy-rate').textContent = accuracy;
+            
+            // 显示错题集
+            if (stats.wrongAnswers.length > 0) {
+                const wrongAnswersList = document.getElementById('wrong-answers-list');
+                wrongAnswersList.innerHTML = '';
+                
+                stats.wrongAnswers.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'question';
+                    div.innerHTML = `
+                        <p><strong>${item.event}</strong></p>
+                        <p>你的答案: ${item.userAnswer} (错误)</p>
+                        <p>正确答案: ${item.correctAnswer}</p>
+                    `;
+                    wrongAnswersList.appendChild(div);
+                });
+                
+                document.getElementById('wrong-answers').style.display = 'block';
+            }
+        }
+
+        // 生成随机题目
+        function generateQuiz() {
+            const questionsContainer = document.getElementById('questions');
+            questionsContainer.innerHTML = '';
+            
+            // 随机选择10个不重复的事件
+            const selectedEvents = [];
+            const usedIndices = new Set();
+            
+            while (selectedEvents.length < 10 && selectedEvents.length < silkRoadEvents.length) {
+                const randomIndex = Math.floor(Math.random() * silkRoadEvents.length);
+                if (!usedIndices.has(randomIndex)) {
+                    usedIndices.add(randomIndex);
+                    selectedEvents.push(silkRoadEvents[randomIndex]);
+                }
+            }
+            
+            // 生成题目
+            selectedEvents.forEach((event, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                questionDiv.innerHTML = `
+                    <p>${index + 1}. ${event.event} 发生于公元 <input type="text" id="answer-${index}" data-correct="${event.year}"> 年</p>
+                    <div id="feedback-${index}" class="feedback"></div>
+                `;
+                questionsContainer.appendChild(questionDiv);
+            });
+            
+            // 重置结果显示
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('submit-btn').style.display = 'block';
+            document.getElementById('new-quiz-btn').style.display = 'none';
+        }
+
+        // 检查答案
+        function checkAnswers() {
+            const questionDivs = document.querySelectorAll('.question');
+            let correctCount = 0;
+            const wrongAnswers = [];
+            
+            questionDivs.forEach((div, index) => {
+                const input = document.getElementById(`answer-${index}`);
+                const feedback = document.getElementById(`feedback-${index}`);
+                const correctAnswer = input.dataset.correct;
+                const userAnswer = input.value.trim();
+                
+                // 处理"约"和"前"的特殊情况
+                const simplifiedCorrect = correctAnswer.replace(/约|前/g, '');
+                const simplifiedUser = userAnswer.replace(/约|前/g, '');
+                
+                // 处理世纪表示法（如"5世纪"）
+                const isCentury = correctAnswer.includes('世纪');
+                let isCorrect = false;
+                
+                if (isCentury) {
+                    // 如果是世纪表示法，检查用户是否输入了正确的世纪
+                    const correctCentury = correctAnswer.match(/\d+/)[0];
+                    const userCentury = userAnswer.match(/\d+/)?.[0];
+                    isCorrect = userCentury === correctCentury;
+                } else {
+                    isCorrect = simplifiedUser === simplifiedCorrect || userAnswer === correctAnswer;
+                }
+                
+                if (isCorrect) {
+                    feedback.innerHTML = '<span style="color:green;">✓ 正确</span>';
+                    correctCount++;
+                } else {
+                    feedback.innerHTML = `<span style="color:red;">✗ 错误 (正确答案: ${correctAnswer})</span>`;
+                    wrongAnswers.push({
+                        event: div.textContent.split('发生于')[0].replace(/^\d+\.\s/, ''),
+                        userAnswer: userAnswer || '未回答',
+                        correctAnswer: correctAnswer
+                    });
+                }
+            });
+            
+            // 更新统计
+            stats.totalAnswered += questionDivs.length;
+            stats.correctCount += correctCount;
+            stats.wrongCount += (questionDivs.length - correctCount);
+            
+            // 添加到错题集
+            wrongAnswers.forEach(wrong => {
+                // 检查是否已经存在于错题集中
+                const exists = stats.wrongAnswers.some(item => 
+                    item.event === wrong.event && item.correctAnswer === wrong.correctAnswer
+                );
+                
+                if (!exists) {
+                    stats.wrongAnswers.push(wrong);
+                }
+            });
+            
+            // 保存并更新显示
+            saveStats();
+            updateStatsDisplay();
+            
+            // 显示结果
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = correctCount === questionDivs.length ? 'result correct' : 'result incorrect';
+            resultDiv.innerHTML = `
+                <h3>测试结果</h3>
+                <p>正确: ${correctCount} / ${questionDivs.length}</p>
+                <p>得分: ${Math.round((correctCount / questionDivs.length) * 100)}分</p>
+                ${correctCount === questionDivs.length ? 
+                    '<p>🎉 太棒了！你对丝绸之路历史非常了解！</p>' : 
+                    correctCount >= questionDivs.length * 0.7 ? 
+                    '<p>👍 不错！继续努力掌握更多丝绸之路知识！</p>' : 
+                    '<p>💪 加油！建议多复习丝绸之路的重要历史事件！</p>'}
+            `;
+            
+            document.getElementById('submit-btn').style.display = 'none';
+            document.getElementById('new-quiz-btn').style.display = 'block';
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStats();
+            generateQuiz();
+            
+            document.getElementById('submit-btn').addEventListener('click', checkAnswers);
+            document.getElementById('new-quiz-btn').addEventListener('click', generateQuiz);
+        });
+    </script>
+</body>
+</html>
